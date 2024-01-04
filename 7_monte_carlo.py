@@ -1,3 +1,4 @@
+from distutils import extension
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -31,26 +32,19 @@ bonds_ini = b * np.array([bx, by, bz])  # Bond vectors
 Qini = np.sum(bonds_ini, axis=1)        # Initial Q vector
 
 # 2. Physical Inputs
-# kb = 1.38064852e-23  # Boltzmann constant [J/K]
-# T = 1e21              # Temperature [K]
+# kb = 1.38064852e-23   # Boltzmann constant [J/K]
+# T = _                 # Temperature [K]
 kb_T = 1
 # Force vector along x (Fx, 0, 0) [N]
-F_array = np.array([[0.01, 0, 0], [0.1, 0, 0], [0.5, 0, 0],
-                    [1, 0, 0], [1.5, 0, 0], [2, 0, 0],
-                    [2.5, 0, 0], [3, 0, 0], [3.5, 0, 0],
-                    [4, 0, 0], [4.5, 0, 0], [5, 0, 0],
-                    [5.5, 0, 0], [6, 0, 0], [6.5, 0, 0],
-                    [7, 0, 0], [7.5, 0, 0], [8, 0, 0],
-                    [8.5, 0, 0], [9, 0, 0], [9.5, 0, 0],
-                    [10, 0, 0]])
-
-# F_array = np.array([[0.01, 0, 0], [0.1, 0, 0], [0.5, 0, 0],
-#                     [1, 0, 0], [2, 0, 0], [3, 0, 0]])
-
-# F_array = np.array([[0.01, 0, 0], [0.1, 0, 0], [1, 0, 0]])
-
-# # Same left plot as him
-# F_array = np.array([[0.1, 0, 0]])
+F_array = np.array([[0.01, 0, 0], [0.1, 0, 0], [0.2, 0, 0],
+                    [0.35, 0, 0], [0.5, 0, 0], [0.65, 0, 0],
+                    [0.82, 0, 0], [1, 0, 0], [1.5, 0, 0],
+                    [2, 0, 0], [2.5, 0, 0], [3, 0, 0],
+                    [3.5, 0, 0], [4, 0, 0], [4.5, 0, 0],
+                    [5, 0, 0], [5.5, 0, 0], [6, 0, 0],
+                    [6.5, 0, 0], [7, 0, 0], [7.5, 0, 0],
+                    [8, 0, 0], [8.5, 0, 0], [9, 0, 0],
+                    [9.5, 0, 0], [10, 0, 0]])
 
 # 8. Extension vs Force analysis
 Qx_force = list()      # Final Q depending on force vector
@@ -134,26 +128,32 @@ for F in F_array:
     # Print results
     print('Force: {}'.format(F))
     print('Percentage of acceptance: {} %\n'.format(100 * t_accept/count))
-    if F[0] == 1:
+    if F[0] == 10:
         # Plot Q extension
         plt.figure()
         plt.plot(Q_ext[:, 0], label='Qx')
         plt.title(r'$F = %.2f$' % F[0], fontsize=18)
         plt.xlabel(r'$t$', fontsize=18)
         plt.ylabel(r'$Q_x$', fontsize=18)
-        plt.ylim(0, Q_ext[-1, 0] * 1.1)
+        # horizontal line indicating maximum value
+        plt.axhline(y=b*N, color='r', linestyle='--',
+                    label=r'$Q_x$ Theoretical')
+        plt.ylim(0, Q_ext[-1, 0] * 1.2)
         plt.tick_params(axis='y', which='major', labelsize=16, direction='in')
         plt.tick_params(axis='x', which='major', labelsize=16, direction='in')
         plt.show()
 
     Qx_force.append(Q_ext[-1, 0])   # Save final Qx value
 
+exten_force = np.array(Qx_force) / (N * b)      # Extension array
+exten_theory = np.array(Q_theory) / (N * b)     # Theoretical extension array
+
 # 9. Plot Q vs F
 plt.figure()
-plt.plot(F_array[:, 0], Qx_force, 'bo', label=r'$Q_x$ Simulated')
-plt.plot(F_array[:, 0], Q_theory, 'r--', label=r'$Q_x$ Theoretical')
-plt.xlabel(r'$F$', fontsize=18)
-plt.ylabel(r'$Q_x$', fontsize=18)
+plt.plot(exten_force, F_array[:, 0], 'bx', label=r'$Q_x/(n \cdot b)$ Simulated')
+plt.plot(exten_theory, F_array[:, 0], 'r--', label=r'$Q_x/(n \cdot b)$ Theoretical')
+plt.xlabel(r'$Q_x/(n \cdot b)$', fontsize=18)
+plt.ylabel(r'$F$', fontsize=18)
 plt.tick_params(axis='y', which='major', labelsize=16, direction='in')
 plt.tick_params(axis='x', which='major', labelsize=16, direction='in')
 plt.legend()
