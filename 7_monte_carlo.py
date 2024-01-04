@@ -8,51 +8,46 @@ plt.rc('font', family='serif')
 # Parameters
 b = 3.0     # Bond length
 N = 100     # Number of bonds
-T = 100     # Number of conformations
 
 # Coordinates arrays
-x = np.zeros((T, N+1))
-y = np.zeros((T, N+1))
-z = np.zeros((T, N+1))
+x = np.zeros(N+1)
+y = np.zeros(N+1)
+z = np.zeros(N+1)
 
-# Read simulation data
-filename = 'simulation_FJC_b=%.1f_N=%d_T=%d.xyz' % (b, N, T)
-with open(filename, 'r', encoding='utf-8') as f:
-    for t in range(T):
-        # First 2 lines unnecessary
-        lines = f.readline()
-        lines = f.readline()
-        # Save coordinates and separate in x, y, z
-        for i in range(N+1):
-            lines = f.readline()
-            coord = lines.split()
-            x[t, i] = float(coord[1])
-            y[t, i] = float(coord[2])
-            z[t, i] = float(coord[3])
+# Generate the random walk
+bx = np.random.uniform(-1, 1, 10*N)
+by = np.random.uniform(-1, 1, 10*N)
+bz = np.random.uniform(-1, 1, 10*N)
+normb = np.sqrt(bx**2 + by**2 + bz**2)    # Trajectory norm
 
-# Initial polymer for one T (t=0)
-polymer = np.array([x[0], y[0], z[0]])
-# Bonds vector
-bonds = np.array(polymer[:, 1:] - polymer[:, :-1])
+# Ignore and normalize the points further than normb
+idb = np.where(normb <= 1)[0][0:N]
+bx = bx[idb]/normb[idb]
+by = by[idb]/normb[idb]
+bz = bz[idb]/normb[idb]
+
+# Compute the trajectory
+bonds_ini = b * np.array([bx, by, bz])  # Bond vectors
+Qini = np.sum(bonds_ini, axis=1)        # Initial Q vector
 
 # 2. Physical Inputs
-kb = 1.38064852e-23  # Boltzmann constant [J/K]
-T = 1e21              # Temperature [K]
-kb_T = kb * T
+# kb = 1.38064852e-23  # Boltzmann constant [J/K]
+# T = 1e21              # Temperature [K]
+kb_T = 1
 # Force vector along x (Fx, 0, 0) [N]
-# F_array = np.array([[0.01, 0, 0], [0.1, 0, 0], [0.5, 0, 0],
-#                     [1, 0, 0], [1.5, 0, 0], [2, 0, 0],
-#                     [2.5, 0, 0], [3, 0, 0], [3.5, 0, 0],
-#                     [4, 0, 0], [4.5, 0, 0], [5, 0, 0],
-#                     [5.5, 0, 0], [6, 0, 0], [6.5, 0, 0],
-#                     [7, 0, 0], [7.5, 0, 0], [8, 0, 0],
-#                     [8.5, 0, 0], [9, 0, 0], [9.5, 0, 0],
-#                     [10, 0, 0]])
+F_array = np.array([[0.01, 0, 0], [0.1, 0, 0], [0.5, 0, 0],
+                    [1, 0, 0], [1.5, 0, 0], [2, 0, 0],
+                    [2.5, 0, 0], [3, 0, 0], [3.5, 0, 0],
+                    [4, 0, 0], [4.5, 0, 0], [5, 0, 0],
+                    [5.5, 0, 0], [6, 0, 0], [6.5, 0, 0],
+                    [7, 0, 0], [7.5, 0, 0], [8, 0, 0],
+                    [8.5, 0, 0], [9, 0, 0], [9.5, 0, 0],
+                    [10, 0, 0]])
 
 # F_array = np.array([[0.01, 0, 0], [0.1, 0, 0], [0.5, 0, 0],
 #                     [1, 0, 0], [2, 0, 0], [3, 0, 0]])
 
-F_array = np.array([[0.01, 0, 0], [0.1, 0, 0], [1, 0, 0]])
+# F_array = np.array([[0.01, 0, 0], [0.1, 0, 0], [1, 0, 0]])
 
 # # Same left plot as him
 # F_array = np.array([[0.1, 0, 0]])
@@ -68,8 +63,9 @@ for ff in F_array:
 
 for F in F_array:
     # 3. Compute initial V
-    Q0 = np.array(polymer[:, -1] - polymer[:, 0])
-    V0 = -np.dot(F, Q0)
+    bonds = bonds_ini.copy()    # Initial bond vectors
+    Q0 = Qini.copy()            # Initial Q vector
+    V0 = -np.dot(F, Qini)       # Initial pot energy
 
     # 7. MONTE CARLO PROCESS
     # Iteration parameters
@@ -93,8 +89,17 @@ for F in F_array:
         bm = np.random.randint(0, N)    # randint is the bond to modify
 
         # New bond vector
-        new_b = np.random.rand(3)   # Generate 3 random numbers at once
-        new_b *= b / np.linalg.norm(new_b)  # Normalize and scale in-place
+        bx = np.random.uniform(-1, 1, 100)
+        by = np.random.uniform(-1, 1, 100)
+        bz = np.random.uniform(-1, 1, 100)
+        normb = np.sqrt(bx**2 + by**2 + bz**2)    # Trajectory norm
+        # Ignore and normalize the points further than normb
+        idb = np.where(normb <= 1)[0][0]
+        bx = bx[idb]/normb[idb]
+        by = by[idb]/normb[idb]
+        bz = bz[idb]/normb[idb]
+
+        new_b = b * np.array([bx, by, bz])   # New bond vector
 
         old_b = bonds[:, bm]    # Old bond vector
 
@@ -129,16 +134,17 @@ for F in F_array:
     # Print results
     print('Force: {}'.format(F))
     print('Percentage of acceptance: {} %\n'.format(100 * t_accept/count))
-    # if F[0] == 0.01:
-    # Plot Q extension
-    plt.figure()
-    plt.plot(Q_ext[:, 0], label='Qx')
-    plt.title(r'$F = %.2f$' % F[0], fontsize=18)
-    plt.xlabel(r'$t$', fontsize=18)
-    plt.ylabel(r'$Q_x$', fontsize=18)
-    plt.tick_params(axis='y', which='major', labelsize=16, direction='in')
-    plt.tick_params(axis='x', which='major', labelsize=16, direction='in')
-    plt.show()
+    if F[0] == 1:
+        # Plot Q extension
+        plt.figure()
+        plt.plot(Q_ext[:, 0], label='Qx')
+        plt.title(r'$F = %.2f$' % F[0], fontsize=18)
+        plt.xlabel(r'$t$', fontsize=18)
+        plt.ylabel(r'$Q_x$', fontsize=18)
+        plt.ylim(0, Q_ext[-1, 0] * 1.1)
+        plt.tick_params(axis='y', which='major', labelsize=16, direction='in')
+        plt.tick_params(axis='x', which='major', labelsize=16, direction='in')
+        plt.show()
 
     Qx_force.append(Q_ext[-1, 0])   # Save final Qx value
 
