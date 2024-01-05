@@ -1,4 +1,3 @@
-from distutils import extension
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -150,8 +149,9 @@ exten_theory = np.array(Q_theory) / (N * b)     # Theoretical extension array
 
 # 9. Plot Q vs F
 plt.figure()
-plt.plot(exten_force, F_array[:, 0], 'bx', label=r'$Q_x/(n \cdot b)$ Simulated')
-plt.plot(exten_theory, F_array[:, 0], 'r--', label=r'$Q_x/(n \cdot b)$ Theoretical')
+plt.plot(exten_force, F_array[:, 0], 'bx', label=r'$Q_x/(n\cdot b)$ Simulated')
+plt.plot(exten_theory, F_array[:, 0], 'r--',
+         label=r'$Q_x/(n \cdot b)$ Theoretical')
 plt.xlabel(r'$Q_x/(n \cdot b)$', fontsize=18)
 plt.ylabel(r'$F$', fontsize=18)
 plt.tick_params(axis='y', which='major', labelsize=16, direction='in')
