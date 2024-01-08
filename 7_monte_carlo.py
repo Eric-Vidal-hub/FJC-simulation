@@ -9,6 +9,7 @@ plt.rc('font', family='serif')
 b = 3.0     # Bond length
 N = 100     # Number of bonds
 
+
 # Coordinates arrays
 x = np.zeros(N+1)
 y = np.zeros(N+1)
@@ -65,7 +66,8 @@ for F in F_array:
     t_accept = 1    # Time step definition
     naccept = 1000  # Number of accepted steps
     count = 1       # Counter
-    nmax = 10000000    # Maximum number of steps
+    nmax = 10000000     # Maximum number of steps
+    avg_index = 100     # Average index
 
     # Sanity check
     if naccept > nmax:
@@ -142,7 +144,7 @@ for F in F_array:
         plt.tick_params(axis='x', which='major', labelsize=16, direction='in')
         plt.show()
 
-    Qx_force.append(Q_ext[-1, 0])   # Save final Qx value
+    Qx_force.append(np.mean(Q_ext[-avg_index:, 0]))   # Save final Qx value
 
 exten_force = np.array(Qx_force) / (N * b)      # Extension array
 exten_theory = np.array(Q_theory) / (N * b)     # Theoretical extension array
