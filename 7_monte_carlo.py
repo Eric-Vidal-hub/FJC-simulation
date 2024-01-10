@@ -1,5 +1,7 @@
+from tkinter import font
 import numpy as np
 import matplotlib.pyplot as plt
+from sympy import Si
 
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
@@ -131,17 +133,17 @@ for F in F_array:
     print('Percentage of acceptance: {} %\n'.format(100 * t_accept/count))
     if F[0] == 10:
         # Plot Q extension
-        plt.figure()
+        plt.figure(figsize=(7, 7))
         plt.plot(Q_ext[:, 0], label='Qx')
-        plt.title(r'$F = %.2f$' % F[0], fontsize=18)
-        plt.xlabel(r'$t$', fontsize=18)
-        plt.ylabel(r'$Q_x$', fontsize=18)
+        plt.title(r'$F = %.2f$' % F[0], fontsize=24)
+        plt.xlabel(r'$t$', fontsize=28)
+        plt.ylabel(r'$Q_x$', fontsize=28)
         # horizontal line indicating maximum value
         plt.axhline(y=b*N, color='r', linestyle='--',
                     label=r'$Q_x$ Theoretical')
         plt.ylim(0, Q_ext[-1, 0] * 1.2)
-        plt.tick_params(axis='y', which='major', labelsize=16, direction='in')
-        plt.tick_params(axis='x', which='major', labelsize=16, direction='in')
+        plt.tick_params(axis='y', which='major', labelsize=24, direction='in')
+        plt.tick_params(axis='x', which='major', labelsize=24, direction='in')
         plt.show()
 
     Qx_force.append(np.mean(Q_ext[-avg_index:, 0]))   # Save final Qx value
@@ -150,13 +152,13 @@ exten_force = np.array(Qx_force) / (N * b)      # Extension array
 exten_theory = np.array(Q_theory) / (N * b)     # Theoretical extension array
 
 # 9. Plot Q vs F
-plt.figure()
+plt.figure(figsize=(7, 7))
 plt.plot(exten_force, F_array[:, 0], 'bx', label=r'$Q_x/(n\cdot b)$ Simulated')
 plt.plot(exten_theory, F_array[:, 0], 'r--',
          label=r'$Q_x/(n \cdot b)$ Theoretical')
-plt.xlabel(r'$Q_x/(n \cdot b)$', fontsize=18)
-plt.ylabel(r'$F$', fontsize=18)
-plt.tick_params(axis='y', which='major', labelsize=16, direction='in')
-plt.tick_params(axis='x', which='major', labelsize=16, direction='in')
-plt.legend()
+plt.xlabel(r'$Q_x/(n \cdot b)$', fontsize=24)
+plt.ylabel(r'$F$', fontsize=24)
+plt.tick_params(axis='y', which='major', labelsize=24, direction='in')
+plt.tick_params(axis='x', which='major', labelsize=24, direction='in')
+plt.legend(fontsize=24, loc='best')
 plt.show()
